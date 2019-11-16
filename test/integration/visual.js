@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 const puppeteer = require('puppeteer');
 const expect = require('chai').expect;
-const {startServer} = require('polyserve');
+const { startServer } = require('polyserve');
 const path = require('path');
 const fs = require('fs');
 const PNG = require('pngjs').PNG;
@@ -19,74 +19,74 @@ const pixelmatch = require('pixelmatch');
 const currentDir = `${process.cwd()}/test/integration/screenshots-current`;
 const baselineDir = `${process.cwd()}/test/integration/screenshots-baseline`;
 
-describe('👀 page screenshots are correct', function() {
+describe('👀 page screenshots are correct', function () {
   let polyserve, browser, page;
 
-  before(async function() {
-    polyserve = await startServer({port:4444, root:path.join(__dirname, '../..'), moduleResolution:'node'});
+  before(async function () {
+    polyserve = await startServer({ port: 4444, root: path.join(__dirname, '../..'), moduleResolution: 'node' });
 
     // Create the test directory if needed.
-    if (!fs.existsSync(currentDir)){
+    if (!fs.existsSync(currentDir)) {
       fs.mkdirSync(currentDir);
     }
     // And it's subdirectories.
-    if (!fs.existsSync(`${currentDir}/wide`)){
+    if (!fs.existsSync(`${currentDir}/wide`)) {
       fs.mkdirSync(`${currentDir}/wide`);
     }
-    if (!fs.existsSync(`${currentDir}/narrow`)){
+    if (!fs.existsSync(`${currentDir}/narrow`)) {
       fs.mkdirSync(`${currentDir}/narrow`);
     }
   });
 
   after((done) => polyserve.close(done));
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     browser = await puppeteer.launch();
     page = await browser.newPage();
   });
 
   afterEach(() => browser.close());
 
-  describe('wide screen', function() {
-    beforeEach(async function() {
-      return page.setViewport({width: 800, height: 600});
+  describe('wide screen', function () {
+    beforeEach(async function () {
+      return page.setViewport({ width: 800, height: 600 });
     });
 
-    it('/index.html', async function() {
+    it('/index.html', async function () {
       return takeAndCompareScreenshot(page, '', 'wide');
     });
-    it('/view1', async function() {
+    it('/view1', async function () {
       return takeAndCompareScreenshot(page, 'view1', 'wide');
     });
-    it('/view2', async function() {
+    it('/view2', async function () {
       return takeAndCompareScreenshot(page, 'view2', 'wide');
     });
-    it('/view3', async function() {
+    it('/view3', async function () {
       return takeAndCompareScreenshot(page, 'view3', 'wide');
     });
-    it('/404', async function() {
+    it('/404', async function () {
       return takeAndCompareScreenshot(page, 'batmanNotAView', 'wide');
     });
   });
 
-  describe('narrow screen', function() {
-    beforeEach(async function() {
-      return page.setViewport({width: 375, height: 667});
+  describe('narrow screen', function () {
+    beforeEach(async function () {
+      return page.setViewport({ width: 375, height: 667 });
     });
 
-    it('/index.html', async function() {
+    it('/index.html', async function () {
       return takeAndCompareScreenshot(page, '', 'narrow');
     });
-    it('/view1', async function() {
+    it('/view1', async function () {
       return takeAndCompareScreenshot(page, 'view1', 'narrow');
     });
-    it('/view2', async function() {
+    it('/view2', async function () {
       return takeAndCompareScreenshot(page, 'view2', 'narrow');
     });
-    it('/view3', async function() {
+    it('/view3', async function () {
       return takeAndCompareScreenshot(page, 'view3', 'narrow');
     });
-    it('/404', async function() {
+    it('/404', async function () {
       return takeAndCompareScreenshot(page, 'batmanNotAView', 'narrow');
     });
   });
@@ -97,7 +97,7 @@ async function takeAndCompareScreenshot(page, route, filePrefix) {
   let fileName = filePrefix + '/' + (route ? route : 'index');
 
   await page.goto(`http://127.0.0.1:4444/${route}`);
-  await page.screenshot({path: `${currentDir}/${fileName}.png`});
+  await page.screenshot({ path: `${currentDir}/${fileName}.png` });
   return compareScreenshots(fileName);
 }
 
@@ -124,7 +124,7 @@ function compareScreenshots(view) {
       expect(img1.height, 'image heights are the same').equal(img2.height);
 
       // Do the visual diff.
-      const diff = new PNG({width: img1.width, height: img1.height});
+      const diff = new PNG({ width: img1.width, height: img1.height });
 
       // Skip the bottom/rightmost row of pixels, since it seems to be
       // noise on some machines :/
@@ -132,8 +132,8 @@ function compareScreenshots(view) {
       const height = img1.height - 1;
 
       const numDiffPixels = pixelmatch(img1.data, img2.data, diff.data,
-          width, height, {threshold: 0.2});
-      const percentDiff = numDiffPixels/(width * height)*100;
+        width, height, { threshold: 0.2 });
+      const percentDiff = numDiffPixels / (width * height) * 100;
 
       const stats = fs.statSync(`${currentDir}/${view}.png`);
       const fileSizeInBytes = stats.size;
